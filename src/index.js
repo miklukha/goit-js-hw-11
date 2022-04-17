@@ -1,14 +1,14 @@
 import './css/styles.css';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
-
 import cardImage from './templates/image-card.hbs';
+import { getRefs } from './js/gets.refs';
+
+const refs = getRefs();
 
 const debounce = require('lodash.debounce');
-
 const axios = require('axios');
+
+const KEY = '26815129-636df5f0482082ec4ff5cd1a9';
 
 let page = 1;
 const searchForm = document.querySelector('form');
@@ -19,22 +19,22 @@ window.addEventListener('scroll', debounce(onScroll, 200));
 
 let input;
 
-searchForm.addEventListener('submit', e => {
+refs.searchForm.addEventListener('submit', e => {
   e.preventDefault();
+
   input = e.currentTarget.searchQuery.value.trim();
-  galleryRef.innerHTML = '';
+  refs.gallery.innerHTML = '';
   page = 1;
 
   if (input) {
     axiosImg(input, page);
   }
 });
-const key = '26815129-636df5f0482082ec4ff5cd1a9';
 
 async function axiosImg(name, page) {
   try {
     const response = await axios.get(
-      `https://pixabay.com/api/?key=${key}&q=${name}&page=${page}&per_page=40&image_type=photo&orientation=horizontal&safesearch=true`,
+      `https://pixabay.com/api/?key=${KEY}&q=${name}&page=${page}&per_page=40&image_type=photo&orientation=horizontal&safesearch=true`,
     );
 
     console.log(response);
@@ -44,7 +44,7 @@ async function axiosImg(name, page) {
       return;
     }
 
-    if (response.data.totalHits === cards.length) {
+    if (response.data.totalHits === refs.renderedCards.length) {
       Notify.info("We're sorry, but you've reached the end of search results.");
       return;
     }
@@ -58,7 +58,7 @@ async function axiosImg(name, page) {
 
 function renderGallery(images) {
   const markupGallery = cardImage({ images });
-  galleryRef.insertAdjacentHTML('beforeend', markupGallery);
+  refs.gallery.insertAdjacentHTML('beforeend', markupGallery);
 }
 
 function isInViewport(element) {
@@ -72,8 +72,8 @@ function isInViewport(element) {
 }
 
 function onScroll() {
-  if (cards[cards.length - 1]) {
-    let visible = isInViewport(cards[cards.length - 1]);
+  if (refs.renderedCards[refs.renderedCards.length - 1]) {
+    let visible = isInViewport(refs.renderedCards[refs.renderedCards.length - 1]);
 
     if (visible) {
       page += 1;
