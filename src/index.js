@@ -1,4 +1,5 @@
 import './css/styles.css';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 import { getRefs } from './js/gets-refs';
 import { PhotoApiService } from './js/photo-service';
@@ -23,10 +24,11 @@ function onScroll() {
 
     if (visible) {
       photoApiService.incrementPage();
+
       axiosImg()
         .then(isCollectionEnd)
         .then(response => renderGallery(response.hits, refs))
-        .catch(error => console.log(error));
+        .catch(() => Notify.info("We're sorry, but you've reached the end of search results."));
     }
   }
 }
@@ -46,7 +48,9 @@ function onSearchForm(e) {
   axiosImg()
     .then(checkRequest)
     .then(response => renderGallery(response.hits, refs))
-    .catch(error => console.log(error));
+    .catch(() =>
+      Notify.failure('Sorry, there are no images matching your search query. Please try again.'),
+    );
 }
 
 async function axiosImg() {
