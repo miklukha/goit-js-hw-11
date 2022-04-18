@@ -5,7 +5,8 @@ const BASE_URL = 'https://pixabay.com/api/';
 
 export class PhotoApiService {
   constructor() {
-    (this.searchQuery = ''), (this.page = 1);
+    this.searchQuery = '';
+    this.page = 1;
   }
 
   async axios() {
@@ -21,7 +22,7 @@ export class PhotoApiService {
   }
 
   incrementPage() {
-    this.pae += 1;
+    this.page += 1;
   }
 
   resetPage() {
