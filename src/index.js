@@ -1,5 +1,4 @@
 import './css/styles.css';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 import { getRefs } from './js/gets-refs';
 import { PhotoApiService } from './js/photo-service';
@@ -7,6 +6,7 @@ import { renderGallery } from './js/render-gallery';
 import { isInViewport } from './js/is-in-viewport';
 import { clearGallery } from './js/clear-gallery';
 import { isCollectionEnd } from './js/is-collection-end';
+import { checkRequest } from './js/check-request';
 
 const debounce = require('lodash.debounce');
 const refs = getRefs();
@@ -22,14 +22,11 @@ function onScroll() {
     let visible = isInViewport(lastElement);
 
     if (visible) {
-      const collectionEnd = isCollectionEnd(response.hits);
-
-      if (collectionEnd) {
-        Notify.info("We're sorry, but you've reached the end of search results.");
-        return;
-      }
       photoApiService.incrementPage();
-      axiosImg();
+      axiosImg()
+        .then(isCollectionEnd)
+        .then(response => renderGallery(response.hits, refs))
+        .catch(error => console.log(error));
     }
   }
 }
@@ -45,29 +42,15 @@ function onSearchForm(e) {
 
   clearGallery(refs);
   photoApiService.resetPage();
-  // checkRequest()
-  //   .then(axiosImg)
-  //   .catch(error => console.log(error));
-  axiosImg();
-}
 
-function checkRequest(response) {
-  // const response = await photoApiService.axios();
-
-  if (response.hits.length === 0) {
-    Notify.failure('Sorry, there are no images matching your search query. Please try again.');
-    return;
-  }
-
-  Notify.success(`Hooray! We found ${response.totalHits} totalHits images.`);
-
-  // return response;
+  axiosImg()
+    .then(checkRequest)
+    .then(response => renderGallery(response.hits, refs))
+    .catch(error => console.log(error));
 }
 
 async function axiosImg() {
   const response = await photoApiService.axios();
-
-  renderGallery(response.hits, refs);
 
   return response;
 }
